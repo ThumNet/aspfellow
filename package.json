@@ -5,7 +5,7 @@
 	"publisher": "ThumNet",
 	"repository": {
 		"type": "git",
-		"url": ""
+		"url": "https://github.com/ThumNet/aspfellow"
 	},
 	"version": "0.0.1",
 	"engines": {
