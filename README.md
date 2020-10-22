@@ -4,7 +4,7 @@ This is a Visual Studio Code extension to help with Classic ASP development.
 
 ## Features
 
-Press `CTRL+Click` on the include file to open that file.
+Press `CTRL+Click` or `F12` on the include file to open that file.
 
 Example of the plugin in action
 
