@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from "path";
-import { AspIncludeReference } from "./AspIncludeReference";
+import { AspCodeBlock, AspIncludeReference, AspMethod, AspMethodBlock, MethodType } from "../types/Interfaces";
+import { AspMethodCreator } from './AspMethodCreator';
 
 const IncludeRegex = /<!--(\s+)?#include(\s+)?(?<type>virtual|file)(\s+)?=(\s+)?\"(?<filename>.*?)\"(\s+)?-->/;
 
@@ -21,7 +22,61 @@ export class AspDocumentScanner {
         }
 
 		return links;
-    }
+	}
+	
+	readMethods() : AspMethod[] | null {
+
+		let methods = [];
+		let methodBlock, code;
+		let i = 0, max = this.document.lineCount;
+		while (i < max) {
+			var line = this.document.lineAt(i).text;
+			
+			let startIndex = line.indexOf("<%");
+			if (startIndex == -1 || startIndex == line.indexOf("<%=")) { i++; continue; }
+
+			methodBlock = null;
+			for (let j = i+1; j < max; j++) {
+				line = this.document.lineAt(j).text;
+
+				code = this.getCode(line);
+				if (!code) continue;
+
+				if (code.indexOf("%>") != -1)
+				{
+					i = j;
+					break;
+				}
+
+				if (code.startsWith("function ") || code.startsWith("sub "))
+				{
+					let start = code[0] == "f" ? line.indexOf("function ") : line.indexOf("sub ");
+					methodBlock = <AspMethodBlock>{
+						Start: new vscode.Position(j, start),
+						Lines: [code],
+					};
+				} 
+				else if (methodBlock) {
+					methodBlock.Lines.push(code);
+					if (code == "end function" || code == "end sub") {
+						methodBlock.End = new vscode.Position(j, line.indexOf(code) + code.length);
+						
+						methods.push(AspMethodCreator.Create(methodBlock));
+						methodBlock = null;
+					}
+				}
+			}
+		}
+		console.debug(methods);
+		return methods;
+	}
+
+	getCode(line: string) : string {
+		let text = line.trim();
+		let quoteIndex = text.indexOf("'");
+		if (quoteIndex == -1) return text;
+		return text.substring(0, quoteIndex).trim();
+	}
     
     readLinkOnLine(lineNumber: number) : AspIncludeReference | null {
         var line = this.document.lineAt(lineNumber).text;

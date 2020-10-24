@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { AspDocumentScanner } from '../AspDocumentScanner';
+import { AspDocumentScanner } from '../utils/AspDocumentScanner';
 
 export class AspDocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 	provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.ProviderResult<vscode.SymbolInformation[] | vscode.DocumentSymbol[]> {
