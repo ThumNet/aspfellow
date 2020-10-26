@@ -1,17 +1,19 @@
 import * as vscode from "vscode-languageserver";
 import * as path from 'path';
-import { TextDocument } from "vscode-languageserver-textdocument"
 import { AspFile, AspInclude } from "../types/Interfaces";
 
 const Patterns = {
     INCLUDE: /<!--\s*#include\s*(virtual|file)\s*=\s*\"(.*?)\"\s*-->/,
     CODE_OPEN: /<%(?!=)/,
-    CODE_CLOSE: /(?<!<%=.*)%>/
+    CODE_CLOSE: /(?<!<%=.*)%>/,
+    METHOD_OPEN: /\b(function|sub)\s+/,
+    FUNCTION: /\bfunction[ ]+([a-z]\w+)(\((.*?)\))?(.*?)\bend function/
 }
 
 export enum AspScope {
 	HTML = 'HTML',
-	CODE = 'CODE'
+    CODE = 'CODE',
+    METHOD = 'METHOD'
 }
 
 export class AspParser {
@@ -21,12 +23,12 @@ export class AspParser {
   
     public static initialise(): PromiseLike<any> { return this.isReady; }  //Placeholder in case we need to initialise onigasm here
  
-    public static parseFile(textDocument: TextDocument, deep: boolean) : AspFile {
-        let line: string, result: RegExpExecArray, chartStart: number;
+    public static parseFile(fileUri: string, fileContent: string, deep: boolean = true) : AspFile {
+        let line: string, lineWithoutComment: string, result: RegExpExecArray, chartStart: number;
 
         this.wipFile = {
-            FileUri: textDocument.uri,
-            Lines: textDocument.getText().split(/\r?\n/),
+            FileUri: fileUri,
+            Lines: fileContent.split(/\r?\n/),
             Includes: []
         };
 
@@ -43,14 +45,26 @@ export class AspParser {
                         this.wipFile.Includes.push({
                             FileName: result[2],
                             FileUri: this.resolvePath(result[1], result[2]),
-                            LocationRange: { 
+                            LocationRange: {
                                 start: { line: i, character: result.index },
                                 end: { line: i, character: result.index + result[0].length }
                             }
                         });
                     }
 
+                    result = Patterns.CODE_OPEN.exec(line);
+                    if (result) { scopeStack.push(AspScope.CODE); }
+
                 case AspScope.CODE:
+                    lineWithoutComment = this.removeComment(line);
+
+                    result = Patterns.METHOD_OPEN.exec(lineWithoutComment);
+                    if (result) {
+                        
+                    }
+
+                    result = Patterns.CODE_CLOSE.exec(line); // note: not using lineWithoutComment here!
+                    if (result) { scopeStack.pop(); }
             }
 
 
@@ -58,6 +72,19 @@ export class AspParser {
         
         return this.wipFile;
 
+    }
+
+    static removeComment(line: string): string {
+
+        let lastDouble=-1, lastSingle = -1;
+        for (let i=0, max=line.length; i<max; i++) {
+            if (line[i] == "'" && lastDouble == -1) { return line.substring(0, i); }
+            if (line[i] == "'") { lastSingle = i; }
+            if (line[i] == '"') { lastDouble = i; }
+        }
+
+        if (lastSingle == -1 || lastDouble > lastSingle ) return line;
+        return line.substring(0, lastSingle);        
     }
     
     static resolvePath(includeType: string, filePath: string): string {

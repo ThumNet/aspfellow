@@ -65,12 +65,12 @@ connection.listen();
 AspParser.initialise()
 	.then(() => {
 		documents.onDidOpen(evt => {
-			let aspFile = AspParser.parseFile(evt.document, true);
+			let aspFile = AspParser.parseFile(evt.document.uri, evt.document.getText());
 			AspContext.registerFile(aspFile);
 			logIt({ level: LogLevel.VERBOSE, message: JSON.stringify(aspFile) });
 		});
 		documents.onDidChangeContent(change => 
-			AspContext.registerFile(AspParser.parseFile(change.document, true))
+			AspContext.registerFile(AspParser.parseFile(change.document.uri, change.document.getText()))
 		);
 		
 		// TODO why not working
