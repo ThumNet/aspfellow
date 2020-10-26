@@ -5,22 +5,10 @@
 import {
 	createConnection,
 	TextDocuments,
-	Diagnostic,
-	DiagnosticSeverity,
 	ProposedFeatures,
 	InitializeParams,
-	DidChangeConfigurationNotification,
-	CompletionItem,
-	CompletionItemKind,
-	TextDocumentPositionParams,
 	TextDocumentSyncKind,
 	InitializeResult,
-	DocumentLinkParams,
-	Location,
-	combineConsoleFeatures,
-	DocumentLink,
-	LocationLink,
-	Range
 } from 'vscode-languageserver';
 
 import { setConsole, logIt, LogLevel } from './utils/config';
@@ -30,6 +18,7 @@ import {
 } from 'vscode-languageserver-textdocument';
 import { AspParser } from './utils/asp-parser';
 import { AspContext } from './utils/asp-context';
+import { config } from 'process';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -40,7 +29,15 @@ documents.listen(connection);
 
 let workspaceFolder: string | null;
 
+let hasConfigurationCapability: boolean = false;
+
+
 connection.onInitialize((params: InitializeParams) => {
+	let capabilities = params.capabilities;
+	hasConfigurationCapability = !!(
+		capabilities.workspace && !!capabilities.workspace.configuration
+	);
+
 	workspaceFolder = params.rootUri;
 	logIt({ level: LogLevel.INFO, message: `[Server(${process.pid}) ${workspaceFolder}] Started and initialize received.` });
 	return <InitializeResult> {
@@ -51,6 +48,18 @@ connection.onInitialize((params: InitializeParams) => {
 		}
 	};
 });
+
+connection.onInitialized(() => {
+	if (hasConfigurationCapability) {
+		// Register for all configuration changes.
+		// TODO why not working
+		// connection.client.register(DidChangeConfigurationNotification.type, undefined);
+
+		connection.workspace.getConfiguration("aspFellow")
+			.then(settings => AspContext.applySettings(settings));
+	}
+});
+
 
 connection.listen();
 AspParser.initialise()
@@ -63,6 +72,12 @@ AspParser.initialise()
 		documents.onDidChangeContent(change => 
 			AspContext.registerFile(AspParser.parseFile(change.document, true))
 		);
+		
+		// TODO why not working
+		// connection.onDidChangeConfiguration(change => {
+		// 	console.log(change.settings);
+		// 	AspContext.applySettings(change.settings);
+		// });
 		connection.onDocumentLinks(doc => AspContext.getDocumentLinks(doc));
 		connection.onDefinition(docPos => AspContext.getDefinition(docPos));
 	});

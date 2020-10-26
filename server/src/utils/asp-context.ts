@@ -1,13 +1,16 @@
 import * as vscode from "vscode-languageserver";
 import { DocumentLink } from "vscode-languageserver";
 import { AspFile } from "../types/Interfaces";
-import { logIt, LogLevel } from "./config";
+import { AspConfig, AspSettings, logIt, LogLevel } from "./config";
 
 export class AspContext {
 
     private static _files: AspFile[] = [];
     private static _fileLookup: { [fullTypeOrUri: string]: AspFile } = Object.create(null);
 
+    public static async applySettings(settings: AspSettings) {
+        AspConfig.LogLevel = settings.logLevel;
+    }
 
     public static registerFile(file: AspFile) {
         if (this._fileLookup[file.FileUri]) {

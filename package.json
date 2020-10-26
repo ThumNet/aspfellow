@@ -33,24 +33,21 @@
 		],
 		"configuration": {
 			"type": "object",
-			"title": "Example configuration",
+			"title": "ASP Fellow configuration",
 			"properties": {
-				"languageServerExample.maxNumberOfProblems": {
-					"scope": "resource",
-					"type": "number",
-					"default": 100,
-					"description": "Controls the maximum number of problems produced by the server."
-				},
-				"languageServerExample.trace.server": {
+				"aspFellow.logLevel": {
 					"scope": "window",
 					"type": "string",
 					"enum": [
-						"off",
-						"messages",
-						"verbose"
+						"VERBOSE",
+						"INFO",
+						"WARNING",
+						"ERROR",
+						"DEBUG",
+						"NONE"
 					],
-					"default": "verbose",
-					"description": "Traces the communication between VS Code and the language server."
+					"default": "NONE",
+					"description": "Controls the loglevel for the language server to the client."
 				}
 			}
 		}
