@@ -15,5 +15,15 @@
 		"vscode-languageserver": "^6.1.1",
 		"vscode-languageserver-textdocument": "^1.0.1"
 	},
-	"scripts": {}
+	"scripts": {
+		"test": "jest --collectCoverage",
+    	"test:watch": "jest --watch"
+	},
+	"devDependencies": {
+		"@types/fs-extra": "^9.0.2",
+		"@types/jest": "^26.0.15",
+		"fs-extra": "^9.0.1",
+		"jest": "^26.6.1",
+		"ts-jest": "^26.4.2"
+	}
 }

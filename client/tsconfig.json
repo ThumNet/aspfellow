@@ -8,6 +8,6 @@
 		"sourceMap": true,
 		"skipLibCheck": true
 	},
-	"include": ["src", "../server/src/utils/config.ts"],
+	"include": ["src"],
 	"exclude": ["node_modules", ".vscode-test"]
 }
