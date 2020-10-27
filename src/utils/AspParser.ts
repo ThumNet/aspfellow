@@ -1,3 +1,5 @@
+// see: https://github.com/zxh0/vscode-proto3/blob/master/src/proto3ScopeGuesser.ts
+
 export class AspParser {
     static removeComment(line: string): string {
 
