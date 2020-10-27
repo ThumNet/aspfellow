@@ -1,40 +1,40 @@
 import * as vscode from 'vscode';
 
 export interface AspIncludeReference {
-	IncludeUri: vscode.Uri;
-	LinkType: string;
-	Filename: string;
-	LineNumber: number;
-	LineText: string;
-	SelectionRange: vscode.Range;
+    includeUri: vscode.Uri;
+    linkType: string;
+    filename: string;
+    lineNumber: number;
+    lineText: string;
+    selectionRange: vscode.Range;
 }
 
 export interface AspFile {
-	Includes?: AspIncludeReference[];
-	Methods?: AspMethod[];
+    includes?: AspIncludeReference[];
+    methods?: AspMethod[];
 }
 
 export interface AspCodeBlock {
-	Lines: string[];
-	Start: vscode.Position;
-	End?: vscode.Position;
+    lines: string[];
+    start: vscode.Position;
+    end?: vscode.Position;
 }
 
 export enum MethodType {
-	Function,
-	Sub
+    function,
+    sub
 }
 
 export interface AspMethod {
-	Name: string;
-	MethodType: MethodType;
-	Params?: string[];
-	CodeBlock: AspMethodBlock;
+    name: string;
+    methodType: MethodType;
+    params?: string[];
+    codeBlock: AspMethodBlock;
 }
 
 export interface AspMethodBlock {
-	Lines: string[];
-	Start: vscode.Position;
-	End: vscode.Position;
+    lines: string[];
+    start: vscode.Position;
+    end: vscode.Position;
 }
 
