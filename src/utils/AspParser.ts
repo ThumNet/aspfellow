@@ -1,6 +1,25 @@
 // see: https://github.com/zxh0/vscode-proto3/blob/master/src/proto3ScopeGuesser.ts
 
 export class AspParser {
+
+    findMethods(content: string): string  {
+        let code = this.removeComments(this.findCode(content));
+        return code;
+    }
+
+    removeComments(code: string): string {
+        return code;
+    }
+
+    findCode(content: string): string {
+        const regex = /<%(?!=)(?<code>.*?)%>/gis
+        let blocks = [], m;
+        while ((m = regex.exec(content)) !== null) {
+            blocks.push(m.groups?.code);
+        }
+        return blocks.join('\n');
+    }
+
     static removeComment(line: string): string {
 
         let lastDouble = -1, lastSingle = -1;
