@@ -14,7 +14,7 @@ export class AspMethodCreator {
             methodType: match[1] === "function" ? MethodType.function : MethodType.sub,
             name: match[2],
             params: this.determineParams(match[3]),
-            codeBlock: block
+            //codeBlock: block
         };
 
     }

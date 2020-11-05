@@ -29,7 +29,7 @@ export interface AspMethod {
     name: string;
     methodType: MethodType;
     params?: string[];
-    codeBlock: AspMethodBlock;
+    //codeBlock: AspMethodBlock;
 }
 
 export interface AspMethodBlock {
