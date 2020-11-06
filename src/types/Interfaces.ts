@@ -25,11 +25,24 @@ export enum MethodType {
     sub
 }
 
+export interface AspInclude {
+    linkType: string;
+    filename: string;
+    includePath: string;
+    rangeInput: RangeInput;
+}
+
 export interface AspMethod {
     name: string;
     methodType: MethodType;
     params?: string[];
     //codeBlock: AspMethodBlock;
+    rangeInput: RangeInput;
+}
+
+export interface RangeInput {
+    offset: number;
+    text: string;
 }
 
 export interface AspMethodBlock {

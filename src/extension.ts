@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 import { AspDefinitionProvider } from './providers/AspDefinitionProvider';
 import { AspDocumentLinkProvider } from './providers/AspDocumentLinkProvider';
+import { AspDocumentSymbolProvider } from './providers/AspDocumentSymbolProvider';
 
 const ASP_SELECTOR = <vscode.DocumentFilter>{
     language: "asp",
@@ -19,6 +20,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(
         ASP_SELECTOR, new AspDefinitionProvider()
+    ));
+
+    context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(
+        ASP_SELECTOR, new AspDocumentSymbolProvider()
     ));
 }
 

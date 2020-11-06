@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.4] - 2020-11-06
+
+- Implemented *Go to symbol* using `CTRL+Shift+O` or `CMD+Shift+O` 
+
 ## [0.0.3] - 2020-10-22
 
 - Implemented *Go to definition* using `F12`

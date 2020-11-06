@@ -1,39 +1,22 @@
 import { expect } from 'chai';
-import { AspMethodBlock, MethodType } from '../types/Interfaces';
+import { MethodType } from '../types/Interfaces';
 import { AspParser } from '../utils/AspParser';
 
 describe('AspParser', () => {
 
-    describe(`#removeComment()`, () => {
+    const FILEPATH = '';
 
-        it(`should work`, () => {
-
-            function doMatch(line: string, expected: string) {
-                expect(AspParser.removeComment(line)).eq(expected);
-            }
-
-            doMatch(`dim myvar`, `dim myvar`);
-            doMatch(`dim 'test`, `dim `);
-            doMatch(`Response.Write("'this' is not comment")`, `Response.Write("'this' is not comment")`);
-            doMatch(`Response.Write("'this' is not comment") 'but this is`, `Response.Write("'this' is not comment") `);
-            doMatch(`'"`, ``);
-            doMatch(`"""'"`, `"""'"`);
-            doMatch(`"'" ' tretert`, `"'" `);
-        });
-    });
-
-
+    
     describe(`#findMethods()`, () => {
 
         it(`can find function`, () => {
-            let parser = new AspParser();
             let content = `<%
 function test(myvar)
     response.write(myvar)
 end function
 %>`;
-
-            let result = parser.findMethods(content);
+            let parser = new AspParser(FILEPATH, content);
+            let result = parser.findMethods();
             expect(result).to.be.an('array').with.length(1);
             let method = result![0];
             expect(method.methodType).eq(MethodType.function);
@@ -43,15 +26,14 @@ end function
         });
 
         it(`can find sub`, () => {
-            let parser = new AspParser();
             let content = `<%
 sub who_are_you (myvar, other)
     response.write(myvar + other)
     ' some comment
 end sub
 %>`;
-
-            let result = parser.findMethods(content);
+            let parser = new AspParser(FILEPATH, content);
+            let result = parser.findMethods();
             expect(result).to.be.an('array').with.length(1);
             let method = result![0];
             expect(method.methodType).eq(MethodType.sub);
@@ -61,15 +43,42 @@ end sub
             expect(method.params![1]).eq('other');
         });
 
+        it(`can find multiple methods`, () => {
+            let content = `<%
+sub who_are_you (myvar, other)
+    response.write(myvar + other)
+    ' some comment
+end sub
+
+function ItsMe(mario)
+    ItsMe = mario & mario
+end function
+%>`;
+            let parser = new AspParser(FILEPATH, content);
+            let result = parser.findMethods();
+            expect(result).to.be.an('array').with.length(2);
+            let method1 = result![0];
+            expect(method1.methodType).eq(MethodType.sub);
+            expect(method1.name).eq('who_are_you');
+            expect(method1.params!.length).eq(2);
+            expect(method1.params![0]).eq('myvar');
+            expect(method1.params![1]).eq('other');
+            let method2 = result![1];
+            expect(method2.methodType).eq(MethodType.function);
+            expect(method2.name).eq('ItsMe');
+            expect(method2.params!).length(1);
+            expect(method2.params![0]).eq('mario');
+        });
+
         it(`can handle method without params #1`, () => {
-            let parser = new AspParser();
             let content = `<%
 sub without_params
     response.write('hi there')
 end sub
 %>`;
 
-            let result = parser.findMethods(content);
+            let parser = new AspParser(FILEPATH, content);
+            let result = parser.findMethods();
             expect(result).to.be.an('array').with.length(1);
             let method = result![0];
             expect(method.methodType).eq(MethodType.sub);
@@ -78,14 +87,13 @@ end sub
         });
 
         it(`can handle method without params #2`, () => {
-            let parser = new AspParser();
             let content = `<%
 sub without_params ( )
     response.write('hi there')
 end sub
 %>`;
-
-            let result = parser.findMethods(content);
+            let parser = new AspParser(FILEPATH, content);
+            let result = parser.findMethods();
             expect(result).to.be.an('array').with.length(1);
             let method = result![0];
             expect(method.methodType).eq(MethodType.sub);
@@ -94,7 +102,6 @@ end sub
         });
 
         it(`can handle method multiline params`, () => {
-            let parser = new AspParser();
             let content = `<%
 sub multiline_params(var1, _
         var2, _
@@ -102,8 +109,8 @@ sub multiline_params(var1, _
     response.write('hi there')
 end sub
 %>`;
-
-            let result = parser.findMethods(content);
+            let parser = new AspParser(FILEPATH, content);
+            let result = parser.findMethods();
             expect(result).to.be.an('array').with.length(1);
             let method = result![0];
             expect(method.methodType).eq(MethodType.sub);
@@ -112,52 +119,6 @@ end sub
             expect(method.params![0]).eq('var1');
             expect(method.params![1]).eq('var2');
             expect(method.params![2]).eq('var3');
-        });
-
-    });
-
-    describe(`#findCode()`, () => {
-
-        it(`should ignore HTML`, () => {
-
-            let parser = new AspParser();
-            let content = `<b>ignored</n>`;
-
-            let result = parser.findCode(content);
-            expect(result).length(0);
-        });
-
-        it(`should find code`, () => {
-
-            let parser = new AspParser();
-            let content = `<%dim myVar%>`;
-
-            let result = parser.findCode(content);
-            expect(result).eq("dim myVar");
-        });
-
-        it(`should find code between HTML`, () => {
-
-            let parser = new AspParser();
-            let content = `<html>
-<%dim myVar%>
-<html>`;
-
-            let result = parser.findCode(content);
-            expect(result).eq("dim myVar");
-        });
-
-        it(`should find multiple code blocks between HTML`, () => {
-
-            let parser = new AspParser();
-            let content = `<html>
-<%dim myVar%>
-<hr>
-<%myVar = 123%>
-<html>`;
-
-            let result = parser.findCode(content);
-            expect(result).eq("dim myVar\nmyVar = 123");
         });
 
     });

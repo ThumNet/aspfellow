@@ -1,68 +1,73 @@
 // see: https://github.com/zxh0/vscode-proto3/blob/master/src/proto3ScopeGuesser.ts
+import * as path from "path";
 
-import { stringify } from "querystring";
-import { AspMethod, MethodType } from "../types/Interfaces";
+import { AspInclude, AspMethod, MethodType } from "../types/Interfaces";
+import { ParserHelper } from './ParserHelper';
 
 export class AspParser {
 
-    findMethods(content: string): AspMethod[] | undefined {
-        let code = this.stripCommentsAndWhitelines(this.findCode(content));
+    constructor(
+        private filePath: string,
+        private content: string
+        ) {
+
+    }
+
+    findIncludes(): AspInclude[] {
+        const regex = /<!--(\s+)?#include(\s+)?(?<type>virtual|file)(\s+)?=(\s+)?\"(?<filename>.*?)\"(\s+)?-->/gis;
+        let m, text = '', includePath, includes: AspInclude[] = [];
+        while ((m = regex.exec(this.content)) !== null && m.groups) {
+            text = m[0];
+            includePath = this.determineIncludePath(m.groups.type, m.groups.filename);
+            if (!includePath) { continue; }
+            includes.push({
+                linkType: m.groups.type,
+                filename: m.groups.filename,
+                includePath: includePath,
+                rangeInput: {
+                    offset: this.content.indexOf(text),
+                    text: text,
+                }
+            });
+        }
+        return includes;
+    }
+
+    
+
+    findMethods(): AspMethod[] {
+        let code = ParserHelper.stripCommentsAndWhitelines(ParserHelper.findCode(this.content));
         const regex = /(?<type>function|sub)\s+(?<name>[a-z_]\w+)\s*(\((?<params>.*?)\))?.*?end\s+(function|sub)/gis;
-        let m, methods: AspMethod[] = [];
+
+        let m, text = '', methods: AspMethod[] = [];
         while ((m = regex.exec(code)) !== null && m.groups) {
+            text = ParserHelper.firstLine(m[0]);
             methods.push({
                 methodType: m.groups.type.toLowerCase() === 'function' ? MethodType.function : MethodType.sub,
                 name: m.groups.name,
-                params: this.determineParams(m.groups.params),
+                params: ParserHelper.determineParams(m.groups.params),
+                rangeInput: {
+                    offset: this.content.indexOf(text),
+                    text: text,
+                }
             });
         }
         return methods;
     }
 
-    determineParams(paramsText: string): string[] | undefined {
-        if (!paramsText) { return; }
+    determineIncludePath(type: string, filename: string): string | undefined {
+        if (type === "file") {
+			return path.join(path.dirname(this.filePath), filename);
+		} else {
+			var parent = this.filePath;
+			do {
+				parent = path.dirname(parent);
+			} while (!parent.endsWith("/src") && parent.length > 3);
 
-        let params = paramsText
-            .split(' ')
-            .map(p => p.trim().replace(',', ''))
-            .filter(p => p && '_' !== p);
-        
-        return params.length === 0 ? undefined : params;
+			if (!parent.endsWith("/src")) { return; }
+
+			return path.join(parent, filename);
+		}
     }
-
-    stripCommentsAndWhitelines(code: string): string {
-        let lines: string[] = [], lineWithoutComment = '';
-
-        code
-            .split('\n')
-            .forEach(line => {
-                if (!line) { return; }
-                lineWithoutComment = AspParser.removeComment(line).trimEnd();
-                if (lineWithoutComment) {
-                    lines.push(lineWithoutComment);
-                }
-            });
-        return lines.join('\n');
-    }
-
-    findCode(content: string): string {
-        const regex = /<%(?!=)(?<code>.*?)%>/gis;
-        let blocks = [], m;
-        while ((m = regex.exec(content)) !== null) {
-            blocks.push(m.groups?.code);
-        }
-        return blocks.join('\n');
-    }
-
-    static removeComment(line: string): string {
-        let lastDouble = -1, lastSingle = -1;
-        for (let i = 0, max = line.length; i < max; i++) {
-            if (line[i] === "'" && lastDouble === -1) { return line.substring(0, i); }
-            if (line[i] === "'") { lastSingle = i; }
-            if (line[i] === '"') { lastDouble = i; }
-        }
-
-        if (lastSingle === -1 || lastDouble > lastSingle) { return line; }
-        return line.substring(0, lastSingle);
-    }
+    
 }
