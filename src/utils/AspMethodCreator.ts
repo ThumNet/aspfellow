@@ -1,27 +1,27 @@
 import { AspMethod, AspMethodBlock, MethodType } from "../types/Interfaces";
 
-const MethodRegex = /(function|sub)\s+([a-z]\w+)\s*(\([^\)]*\)|\n)/
+const METHOD_REGEX = /(function|sub)\s+([a-z]\w+)\s*(\([^\)]*\)|\n)/;
 
 export class AspMethodCreator {
 
-	static Create(block: AspMethodBlock): AspMethod {
+    static create(block: AspMethodBlock): AspMethod {
 
-		let methodText = block.Lines.join('\n');
-		let match = MethodRegex.exec(methodText);
-		if (!match) { throw new Error("This should never happen!") }
+        let methodText = block.lines.join('\n');
+        let match = METHOD_REGEX.exec(methodText);
+        if (!match) { throw new Error("This should never happen!"); }
 
-		return <AspMethod>{
-			MethodType: match[1] == "function" ? MethodType.Function : MethodType.Sub,
-			Name: match[2],
-			Params: this.DetermineParams(match[3]),
-			CodeBlock: block
-		};
+        return <AspMethod>{
+            methodType: match[1] === "function" ? MethodType.function : MethodType.sub,
+            name: match[2],
+            params: this.determineParams(match[3]),
+            //codeBlock: block
+        };
 
-	}
+    }
 
-	private static DetermineParams(paramstext: string): string[] | null {
-        if (!paramstext || paramstext == "()") return null;
-        
+    private static determineParams(paramstext: string): string[] | null {
+        if (!paramstext || paramstext === "()") { return null; }
+
         return paramstext
             .replace("(", "")
             .replace(")", "")
@@ -29,6 +29,6 @@ export class AspMethodCreator {
             .replace("\n", "")
             .split(",")
             .map(p => p.trim())
-            .filter(p => p != "");
-	}
+            .filter(p => p !== "");
+    }
 }

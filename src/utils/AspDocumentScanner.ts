@@ -3,7 +3,9 @@ import * as path from "path";
 import { AspCodeBlock, AspIncludeReference, AspMethod, AspMethodBlock, MethodType } from "../types/Interfaces";
 import { AspMethodCreator } from './AspMethodCreator';
 
-const IncludeRegex = /<!--(\s+)?#include(\s+)?(?<type>virtual|file)(\s+)?=(\s+)?\"(?<filename>.*?)\"(\s+)?-->/;
+const PATTERNS = {
+    include: /<!--(\s+)?#include(\s+)?(?<type>virtual|file)(\s+)?=(\s+)?\"(?<filename>.*?)\"(\s+)?-->/
+};
 
 export class AspDocumentScanner {
 	document: vscode.TextDocument;
@@ -33,16 +35,16 @@ export class AspDocumentScanner {
 			var line = this.document.lineAt(i).text;
 			
 			let startIndex = line.indexOf("<%");
-			if (startIndex == -1 || startIndex == line.indexOf("<%=")) { i++; continue; }
+			if (startIndex === -1 || startIndex === line.indexOf("<%=")) { i++; continue; }
 
 			methodBlock = null;
 			for (let j = i+1; j < max; j++) {
 				line = this.document.lineAt(j).text;
 
 				code = this.getCode(line);
-				if (!code) continue;
+				if (!code) { continue; }
 
-				if (code.indexOf("%>") != -1)
+				if (code.indexOf("%>") !== -1)
 				{
 					i = j;
 					break;
@@ -50,18 +52,18 @@ export class AspDocumentScanner {
 
 				if (code.startsWith("function ") || code.startsWith("sub "))
 				{
-					let start = code[0] == "f" ? line.indexOf("function ") : line.indexOf("sub ");
+					let start = code[0] === "f" ? line.indexOf("function ") : line.indexOf("sub ");
 					methodBlock = <AspMethodBlock>{
-						Start: new vscode.Position(j, start),
-						Lines: [code],
+						start: new vscode.Position(j, start),
+						lines: [code],
 					};
 				} 
 				else if (methodBlock) {
-					methodBlock.Lines.push(code);
-					if (code == "end function" || code == "end sub") {
-						methodBlock.End = new vscode.Position(j, line.indexOf(code) + code.length);
+					methodBlock.lines.push(code);
+					if (code === "end function" || code === "end sub") {
+						methodBlock.end = new vscode.Position(j, line.indexOf(code) + code.length);
 						
-						methods.push(AspMethodCreator.Create(methodBlock));
+						methods.push(AspMethodCreator.create(methodBlock));
 						methodBlock = null;
 					}
 				}
@@ -74,7 +76,7 @@ export class AspDocumentScanner {
 	getCode(line: string) : string {
 		let text = line.trim();
 		let quoteIndex = text.indexOf("'");
-		if (quoteIndex == -1) return text;
+		if (quoteIndex === -1) { return text; }
 		return text.substring(0, quoteIndex).trim();
 	}
     
@@ -84,20 +86,20 @@ export class AspDocumentScanner {
     }
 
     private createReference(line: string, lineNumber: number) : AspIncludeReference | null {
-        var match = IncludeRegex.exec(line);
-        if (!(match && match.groups)) return null;
+        var match = PATTERNS.include.exec(line);
+        if (!(match && match.groups)) { return null; }
         
         var includeUri = this.constructUri(this.document.uri, match.groups.type, match.groups.filename);
-        if (!includeUri) return null;
+        if (!includeUri) { return null; }
 
         return {
-            IncludeUri: includeUri,
-            LineNumber: lineNumber,
-            LinkType: match.groups.type,
-            Filename: match.groups.filename,
-            LineText: line,
-            SelectionRange: this.constructRange(lineNumber, line, match.groups.filename)
-        }
+            includeUri: includeUri,
+            lineNumber: lineNumber,
+            linkType: match.groups.type,
+            filename: match.groups.filename,
+            lineText: line,
+            selectionRange: this.constructRange(lineNumber, line, match.groups.filename)
+        };
     }
 
 	private constructUri(uri: vscode.Uri, type: string, filename: string): vscode.Uri | null {
@@ -109,7 +111,7 @@ export class AspDocumentScanner {
 				parent = path.dirname(parent);
 			} while (!parent.endsWith("/src") && parent.length > 3);
 
-			if (!parent.endsWith("/src")) return null;
+			if (!parent.endsWith("/src")) { return null; }
 
 			return vscode.Uri.file(path.join(parent, filename));
 		}
