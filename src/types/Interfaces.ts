@@ -1,23 +1,9 @@
 import * as vscode from 'vscode';
 
-export interface AspIncludeReference {
-    includeUri: vscode.Uri;
-    linkType: string;
-    filename: string;
-    lineNumber: number;
-    lineText: string;
-    selectionRange: vscode.Range;
-}
-
 export interface AspFile {
-    includes?: AspIncludeReference[];
-    methods?: AspMethod[];
-}
-
-export interface AspCodeBlock {
-    lines: string[];
-    start: vscode.Position;
-    end?: vscode.Position;
+    filePath: string;
+    includes: AspInclude[];
+    methods: AspMethod[];
 }
 
 export enum MethodType {
@@ -25,18 +11,26 @@ export enum MethodType {
     sub
 }
 
-export interface AspInclude {
+export interface AspInclude extends AspIncludeBasic {
+    range: vscode.Range;
+}
+
+export interface AspIncludeBasic {
     linkType: string;
     filename: string;
-    includePath: string;
+    includePath: string;   
     rangeInput: RangeInput;
 }
 
-export interface AspMethod {
+export interface AspMethod extends AspMethodBasic {
+    range: vscode.Range;
+    filePath: string;
+}
+
+export interface AspMethodBasic {
     name: string;
     methodType: MethodType;
     params?: string[];
-    //codeBlock: AspMethodBlock;
     rangeInput: RangeInput;
 }
 
@@ -44,10 +38,3 @@ export interface RangeInput {
     offset: number;
     text: string;
 }
-
-export interface AspMethodBlock {
-    lines: string[];
-    start: vscode.Position;
-    end: vscode.Position;
-}
-
