@@ -14,23 +14,33 @@ export class AspDefinitionProvider implements vscode.DefinitionProvider {
     provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Location | vscode.Location[] | vscode.LocationLink[]> {
         return new Promise((resolve, reject) => {
 
-            let wordRange = document.getWordRangeAtPosition(position);
-            let word = document.getText(wordRange);
-            this.logger.log(`Finding definition for '${word}'`);
-
             const file = FellowContext.getOrCreateFile(document);
 
+            const link = file.includes.find(i => i.range.start.line === position.line);
+            if (link) {
+                return resolve(new vscode.Location(
+                    vscode.Uri.file(link.includePath), link.range));
+            }
+
+            let wordRange = document.getWordRangeAtPosition(position);
+            if (!wordRange) {
+                return reject();
+            }
+
+            let word = document.getText(wordRange);
+            if (!word) {
+                return reject();
+            }
+
+
+            this.logger.log(`Finding definition for '${word}'`);
             const method = this.findMethodRecursive(file, word);
             if (method) {
                 return resolve(new vscode.Location(
                     vscode.Uri.file(method.filePath), method.range));
             }
 
-            const link = file.includes.find(i => i.range.start.line === position.line);
-            if (!link) { return reject(); }
-
-            resolve(new vscode.Location(
-                vscode.Uri.file(link.includePath), link.range));
+            return reject();
         });
     }
 
@@ -50,26 +60,3 @@ export class AspDefinitionProvider implements vscode.DefinitionProvider {
         }
     }
 }
-
-// function findRecursive<T>(
-//     array: [], 
-//     predicate: (value: T, index: number, obj: T[]) => unknown, thisArg?: any, 
-//     childrenPropertyName: string) : T | undefined {
-
-//     if(!childrenPropertyName){
-//         throw "findRecursive requires parameter `childrenPropertyName`";
-//     }
-//     let initialFind =  array.find(predicate);
-//     let elementsWithChildren  = array.filter(x=>x[childrenPropertyName]);
-//     if(initialFind){
-//         return initialFind;
-//     }else if(elementsWithChildren.length){
-//         let childElements: T[] = [];
-//         elementsWithChildren.forEach(x=>{
-//             childElements.push(...x[childrenPropertyName]);
-//         });
-//         return findRecursive(childElements, predicate, childrenPropertyName);
-//     }else{
-//         return undefined;
-//     }
-// }
