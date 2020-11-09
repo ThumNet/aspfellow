@@ -2,6 +2,14 @@
 
 This is a Visual Studio Code extension to help with Classic ASP development.
 
+## Go to definition
+
+By using `F12` you can go to definition, this works for:
+- functions
+- subs
+- includes
+
+> Tip: Methods and Sub that are defined in includes files are also detected.
 
 ## Go to include files
 

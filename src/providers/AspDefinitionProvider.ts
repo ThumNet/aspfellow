@@ -4,7 +4,7 @@ import { FellowContext } from '../utils/FellowContext';
 import { FellowLog } from '../utils/FellowLog';
 
 /**
- * Provides `F12` Go to Definition for Include files
+ * Provides `F12` Go to Definition for Include files and Methods (recursive)
  */
 export class AspDefinitionProvider implements vscode.DefinitionProvider {
 
