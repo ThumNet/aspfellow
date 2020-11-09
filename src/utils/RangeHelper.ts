@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { RangeInput } from '../types/Interfaces';
 
 
-export class DocumentRangeHelper {
+export class RangeHelper {
 
     static create(document: vscode.TextDocument, input: RangeInput): vscode.Range {
         let start = document.positionAt(input.offset);

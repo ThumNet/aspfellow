@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
-import { AspParser } from '../utils/AspParser';
-import { DocumentRangeHelper } from './DocumentRangeHelper';
+import { FellowContext } from '../utils/FellowContext';
 
 /**
  * Provides the Go to symbols `CTRL+Shift+O` or `CMD+Shift+O` for the current document
@@ -9,24 +8,26 @@ export class AspDocumentSymbolProvider implements vscode.DocumentSymbolProvider 
     provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken): vscode.ProviderResult<vscode.SymbolInformation[] | vscode.DocumentSymbol[]> {
         return new Promise((resolve, reject) => {
 
-            let parser = new AspParser(document.uri.fsPath, document.getText());
+            const file = FellowContext.getOrCreateFile(document);
+            if (file.includes.length === 0 && file.methods.length === 0) {
+                return reject();
+            }
+
             let symbols: vscode.DocumentSymbol[] = [];
 
-            parser.findIncludes().forEach(x => {
-                const range = DocumentRangeHelper.create(document, x.rangeInput);
+            file.includes.forEach(x => {
                 symbols.push(
-                    new vscode.DocumentSymbol(x.filename, x.filename, vscode.SymbolKind.File, range, range)
+                    new vscode.DocumentSymbol(x.filename, x.linkType.toString(), vscode.SymbolKind.File, x.range, x.range)
                 );
             });
             
-            parser.findMethods().forEach(x => {
-                const range = DocumentRangeHelper.create(document, x.rangeInput);
+            file.methods.forEach(x => {
                 symbols.push(
-                    new vscode.DocumentSymbol(x.name, 'detail', vscode.SymbolKind.Method, range, range)
+                    new vscode.DocumentSymbol(x.name, x.methodType.toString(), vscode.SymbolKind.Method, x.range, x.range)
                 );
             });
 
-            resolve(symbols);
+            return resolve(symbols);
         });
     }
 }
