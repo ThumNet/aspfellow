@@ -21,7 +21,7 @@ export class AspParser {
             includes.push({
                 linkType: m.groups.type,
                 filename: m.groups.filename,
-                includePath: includePath,
+                includePath: includePath.replace(/\\/g, '/'),
                 rangeInput: {
                     offset: this.content.indexOf(text),
                     text: text,

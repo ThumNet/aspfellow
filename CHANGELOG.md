@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.6] - 2020-11-15
+
+- Fixed bug in *Go to definition* where method is in include file (Windows only)
+
 ## [0.0.5] - 2020-11-09
 
 - Implemented *Go to definition* for methods using `F12`
