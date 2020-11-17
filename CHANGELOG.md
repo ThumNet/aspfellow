@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.7] - 2020-11-17
+
+- Added support for language id `vbs` (next to `asp`)
+
 ## [0.0.6] - 2020-11-15
 
 - Fixed bug in *Go to definition* where method is in include file (Windows only)

@@ -7,11 +7,18 @@ import { AspDocumentSymbolProvider } from './providers/AspDocumentSymbolProvider
 import { FellowContext } from './utils/FellowContext';
 import { FellowLog } from './utils/FellowLog';
 
-const ASP_SELECTOR = <vscode.DocumentFilter>{
-    language: "asp",
-    scheme: "file",
-    pattern: "**/*.{asp,inc}"
-};
+const FELLOW_SELECTORS = Array<vscode.DocumentFilter>(
+    {
+        language: "asp",
+        scheme: "file",
+        pattern: "**/*.{asp,inc}"
+    },
+    {
+        language: "vbs",
+        scheme: "file",
+        pattern: "**/*.{asp,inc}"
+    }
+);
 
 
 // this method is called when your extension is activated
@@ -22,7 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
     FellowContext.initialize(logger);
 
     function register(doc: vscode.TextDocument) {
-        if (ASP_SELECTOR.language !== doc.languageId) { return; }
+        if (FELLOW_SELECTORS.find(s => s.language === doc.languageId) === undefined) { return; }
         
         FellowContext.getOrCreateFile(doc);
     }
@@ -33,15 +40,15 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.workspace.onDidDeleteFiles(evt => FellowContext.unregisterFile(evt.files.map(u => u.path)));
 
     context.subscriptions.push(vscode.languages.registerDocumentLinkProvider(
-        ASP_SELECTOR, new AspDocumentLinkProvider()
+        FELLOW_SELECTORS, new AspDocumentLinkProvider()
     ));
 
     context.subscriptions.push(vscode.languages.registerDefinitionProvider(
-        ASP_SELECTOR, new AspDefinitionProvider(logger)
+        FELLOW_SELECTORS, new AspDefinitionProvider(logger)
     ));
 
     context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider(
-        ASP_SELECTOR, new AspDocumentSymbolProvider()
+        FELLOW_SELECTORS, new AspDocumentSymbolProvider()
     ));
     
 }
