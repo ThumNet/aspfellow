@@ -5,6 +5,7 @@ import { AspParser } from '../utils/AspParser';
 describe('AspParser', () => {
 
     const FILEPATH = '';
+    const WORKSPACEPATH = '';
 
     
     describe(`#findMethods()`, () => {
@@ -15,7 +16,7 @@ function test(myvar)
     response.write(myvar)
 end function
 %>`;
-            let parser = new AspParser(FILEPATH, content);
+            let parser = new AspParser(FILEPATH, content, WORKSPACEPATH);
             let result = parser.findMethods();
             expect(result).to.be.an('array').with.length(1);
             let method = result![0];
@@ -32,7 +33,7 @@ sub who_are_you (myvar, other)
     ' some comment
 end sub
 %>`;
-            let parser = new AspParser(FILEPATH, content);
+            let parser = new AspParser(FILEPATH, content, WORKSPACEPATH);
             let result = parser.findMethods();
             expect(result).to.be.an('array').with.length(1);
             let method = result![0];
@@ -54,7 +55,7 @@ function ItsMe(mario)
     ItsMe = mario & mario
 end function
 %>`;
-            let parser = new AspParser(FILEPATH, content);
+            let parser = new AspParser(FILEPATH, content, WORKSPACEPATH);
             let result = parser.findMethods();
             expect(result).to.be.an('array').with.length(2);
             let method1 = result![0];
@@ -77,7 +78,7 @@ sub without_params
 end sub
 %>`;
 
-            let parser = new AspParser(FILEPATH, content);
+            let parser = new AspParser(FILEPATH, content, WORKSPACEPATH);
             let result = parser.findMethods();
             expect(result).to.be.an('array').with.length(1);
             let method = result![0];
@@ -92,7 +93,7 @@ sub without_params ( )
     response.write('hi there')
 end sub
 %>`;
-            let parser = new AspParser(FILEPATH, content);
+            let parser = new AspParser(FILEPATH, content, WORKSPACEPATH);
             let result = parser.findMethods();
             expect(result).to.be.an('array').with.length(1);
             let method = result![0];
@@ -109,7 +110,7 @@ sub multiline_params(var1, _
     response.write('hi there')
 end sub
 %>`;
-            let parser = new AspParser(FILEPATH, content);
+            let parser = new AspParser(FILEPATH, content, WORKSPACEPATH);
             let result = parser.findMethods();
             expect(result).to.be.an('array').with.length(1);
             let method = result![0];

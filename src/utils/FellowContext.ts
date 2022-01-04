@@ -93,7 +93,10 @@ export class FellowContext {
             };
         }
 
-        let parser = new AspParser(filePath, document.getText());
+        const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+        const workspacePath = workspaceFolder ? workspaceFolder.uri.path : '';
+
+        let parser = new AspParser(filePath, document.getText(), workspacePath);
         this._logger.log(`Parsing file: ${filePath}`);
         const file: AspFile = {
             filePath: filePath,

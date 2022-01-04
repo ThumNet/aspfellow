@@ -8,8 +8,8 @@ export class AspParser {
     
     constructor(
         private filePath: string,
-        private content: string
-        ) { }
+        private content: string,
+        private workspacePath: string) { }
 
     findIncludes(): AspIncludeBasic[] {
         const regex = /<!--(\s+)?#include(\s+)?(?<type>virtual|file)(\s+)?=(\s+)?\"(?<filename>.*?)\"(\s+)?-->/gis;
@@ -55,6 +55,10 @@ export class AspParser {
         if (type === "file") {
 			return path.join(path.dirname(this.filePath), filename);
 		} else {
+            if (filename.startsWith('/')) {
+                return path.join(this.workspacePath, filename);
+            }
+
 			var parent = this.filePath;
 			do {
 				parent = path.dirname(parent);
