@@ -27,6 +27,7 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
+                "${workspaceFolder}/sample", // sets the startup path for this extension
 				"--extensionDevelopmentPath=${workspaceFolder}"
 			],
 			"outFiles": [

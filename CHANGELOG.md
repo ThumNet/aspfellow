@@ -1,5 +1,9 @@
 # Change Log
 
+## [0.0.8] - 2022-01-04
+
+- Fix virtual include linked to root (/)
+
 ## [0.0.7] - 2020-11-17
 
 - Added support for language id `vbs` (next to `asp`)

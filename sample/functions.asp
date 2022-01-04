@@ -1,4 +1,4 @@
-<htm>
+<html>
     <%
     
     dim myVar 
@@ -38,4 +38,4 @@
     %>
     
     <b><%=Response.Write("test")%></b>
-    </htm>
+</html>
